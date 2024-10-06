@@ -7,14 +7,15 @@ const axiosInstance = axios.create({
 const refreshToken = async () => {
   const token = localStorage.getItem("token");
   try {
-    const response = await axiosInstance.post("/auth/refreshToken", token);
-    localStorage.setItem("token", response.data.token);
-    return response.data.token;
+    const response = await axiosInstance.post("auth/refresh", {
+      token,
+    });
+    localStorage.setItem("token", response.result.token);
+    return response.result.token;
   } catch (error) {
-    console.log(error);
     console.log("Failed to refresh token", error);
     localStorage.removeItem("token");
-    window.location.href = "/"; // Redirect to login
+    window.location.href = "/login"; // Redirect to login
     return null;
   }
 };
@@ -22,9 +23,9 @@ const refreshToken = async () => {
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
+    // if (token) {
+    //   config.headers["Authorization"] = `Bearer ${token}`;
+    // }
     return config;
   },
   (error) => {
@@ -35,7 +36,7 @@ axiosInstance.interceptors.request.use(
 // Response interceptor to handle 401 errors
 axiosInstance.interceptors.response.use(
   (response) => {
-    return response;
+    return response.data;
   },
   async (error) => {
     const originalRequest = error.config;
@@ -50,7 +51,7 @@ axiosInstance.interceptors.response.use(
       const newToken = await refreshToken();
 
       if (newToken) {
-        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        //   originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
         return axiosInstance(originalRequest); // Retry the request with the new token
       }
     }

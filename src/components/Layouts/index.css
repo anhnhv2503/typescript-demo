@@ -1,0 +1,17 @@
+/* In a custom CSS file */
+.main-layout {
+    height: 100vh;
+}
+
+.sidebar-column {
+    background-color: #fff;
+    height: 100%;
+    /* Full height for the sidebar */
+}
+
+.main-content {
+    overflow-y: auto;
+    /* Allow scrolling when content overflows */
+    height: 100%;
+    /* Full height for the content area */
+}

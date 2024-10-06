@@ -1,11 +1,16 @@
+import { useDocumentTitle } from "@uidotdev/usehooks";
 import { useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { login } from "../../utils/apiClient";
 
 const Login = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const nav = useNavigate();
+
+  useDocumentTitle("Login");
 
   const handleLogin = async () => {
     if (username.trim() === "") {
@@ -18,10 +23,12 @@ const Login = () => {
       try {
         setLoading(true);
         const response = await login(username, password);
-        console.log(response.data);
+        localStorage.setItem("token", response.result.token);
+        nav("/home");
         setLoading(false);
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     }
   };
