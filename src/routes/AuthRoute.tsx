@@ -1,8 +1,8 @@
-import React from "react";
+import Cookies from "js-cookie";
 import { Navigate, Outlet } from "react-router-dom";
 
 const AuthRoute = () => {
-  const token = localStorage.getItem("token");
+  const token = Cookies.get("token");
   if (token) {
     return <Navigate to="/home" />;
   }

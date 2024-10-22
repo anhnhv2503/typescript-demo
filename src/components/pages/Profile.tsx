@@ -13,7 +13,7 @@ const Profile: React.FC = () => {
     const getInfo = async () => {
       try {
         const response = await getProfile();
-        setProfile(response);
+        setProfile(response.data);
       } catch (error) {
         console.log(error);
       }

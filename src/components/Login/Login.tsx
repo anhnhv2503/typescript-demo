@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../utils/apiClient";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const [username, setUsername] = useState<string>("");
@@ -23,7 +25,8 @@ const Login = () => {
       try {
         setLoading(true);
         const response = await login(username, password);
-        localStorage.setItem("token", response.result.token);
+        Cookies.set("token", response.data.result.token);
+        toast.success("Logged In");
         nav("/home");
         setLoading(false);
       } catch (error) {

@@ -1,31 +1,20 @@
 import axios from "axios";
+import Cookies from "js-cookie";
+import { refreshToken } from "./apiClient";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8080/",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-const refreshToken = async () => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await axiosInstance.post("auth/refresh", {
-      token,
-    });
-    localStorage.setItem("token", response.result.token);
-    return response.result.token;
-  } catch (error) {
-    console.log("Failed to refresh token", error);
-    localStorage.removeItem("token");
-    window.location.href = "/login"; // Redirect to login
-    return null;
-  }
-};
-
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    // if (token) {
-    //   config.headers["Authorization"] = `Bearer ${token}`;
-    // }
+  async (config) => {
+    const token = Cookies.get("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -33,30 +22,33 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle 401 errors
 axiosInstance.interceptors.response.use(
   (response) => {
-    return response.data;
+    return response;
   },
   async (error) => {
     const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const token = Cookies.get("token");
+      if (!token) return Promise.reject(error);
 
-    // Check if the error is due to an expired access token
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry
-    ) {
-      originalRequest._retry = true; // Prevent infinite loop
-      const newToken = await refreshToken();
+      try {
+        const refreshTokenRequest = await axiosInstance.post("auth/refresh", {
+          token,
+        });
+        const newToken = refreshTokenRequest.data.result.token;
+        Cookies.set("token", newToken);
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
-      if (newToken) {
-        //   originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-        return axiosInstance(originalRequest); // Retry the request with the new token
+        return axiosInstance(originalRequest);
+      } catch (error) {
+        Cookies.remove("token");
+        return Promise.reject(error);
       }
     }
 
-    return Promise.reject(error); // Reject if refresh token fails
+    return Promise.reject(error);
   }
 );
 

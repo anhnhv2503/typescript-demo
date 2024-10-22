@@ -1,6 +1,7 @@
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../utils/apiClient";
+import Cookies from "js-cookie";
 
 const Logout = () => {
   const nav = useNavigate();
@@ -8,7 +9,7 @@ const Logout = () => {
     try {
       const response = await logout();
       if (response) {
-        localStorage.removeItem("token");
+        Cookies.remove("token");
         nav("/login");
       }
     } catch (error) {
