@@ -23,8 +23,8 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
+  (res) => {
+    return res;
   },
   async (error) => {
     const originalRequest = error.config;
@@ -34,10 +34,8 @@ axiosInstance.interceptors.response.use(
       if (!token) return Promise.reject(error);
 
       try {
-        const refreshTokenRequest = await axiosInstance.post("auth/refresh", {
-          token,
-        });
-        const newToken = refreshTokenRequest.data.result.token;
+        const refreshTokenResponse = await refreshToken(token);
+        const newToken = refreshTokenResponse.data.result.token;
         Cookies.set("token", newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
 

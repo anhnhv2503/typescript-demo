@@ -29,5 +29,5 @@ export const getProfile = async () => {
 };
 
 export const refreshToken = async (token: string) => {
-  return axiosInstance.post("auth/refresh", { token });
+  return axiosInstance.post("auth/refresh", { token: token });
 };
